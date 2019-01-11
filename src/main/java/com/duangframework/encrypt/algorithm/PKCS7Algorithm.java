@@ -166,18 +166,6 @@ public class PKCS7Algorithm {
 		String encrypt = encrypt(nonce, replyMsg);
 
 		return encrypt;
-
-//		// 生成安全签名
-//		if (timeStamp == "") {
-//			timeStamp = Long.toString(System.currentTimeMillis());
-//		}
-//
-//		String signature = SHA1Algorithm.getSHA1(appKey, timeStamp, nonce, encrypt);
-
-		// System.out.println("发送给平台的签名是: " + signature[1].toString());
-		// 生成发送的xml
-//		String result = XMLParse.generate(encrypt, signature, timeStamp, nonce);
-//		return result;
 	}
 
 }
