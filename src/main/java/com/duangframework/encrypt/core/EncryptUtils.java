@@ -74,7 +74,6 @@ public class EncryptUtils {
                 signStr.deleteCharAt(signStr.length() - 1);
             }
         }
-        System.out.println("##########:  " + signStr);
         return signStr.toString();
     }
 
