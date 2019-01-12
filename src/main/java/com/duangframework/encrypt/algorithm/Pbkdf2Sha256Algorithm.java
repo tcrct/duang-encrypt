@@ -1,7 +1,5 @@
 package com.duangframework.encrypt.algorithm;
 
-import com.duangframework.encrypt.core.Base64;
-
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -54,7 +52,7 @@ public class Pbkdf2Sha256Algorithm {
             System.err.println("Could NOT generate secret key: " + e.getMessage());
         }
         byte[] rawHash = secret.getEncoded();
-        return Base64.encode(rawHash);
+        return java.util.Base64.getEncoder().encodeToString(rawHash);
     }
 
     /**

@@ -1,19 +1,8 @@
 package com.duangframework.encrypt.core;
 
 import com.duangframework.encrypt.algorithm.PKCS7Algorithm;
-import com.duangframework.encrypt.algorithm.Pbkdf2Sha256Algorithm;
-import com.duangframework.encrypt.algorithm.SHA1Algorithm;
-import com.duangframework.encrypt.algorithm.Sha256Algorithm;
 import com.duangframework.encrypt.exception.EncryptException;
 
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.EncodedKeySpec;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -140,67 +129,54 @@ public class EncryptUtils {
         return new String(rs);
     }
 
-    public static PublicKey getPublicKey(byte[] keyBytes, String algorithm) {
-        PublicKey publicKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance(algorithm);
-            EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-            publicKey = kf.generatePublic(keySpec);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("Could not reconstruct the public key, the given algorithm could not be found.");
-        } catch (InvalidKeySpecException e) {
-            System.err.println("Could not reconstruct the public key");
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-        return publicKey;
-    }
-
-    public static PrivateKey getPrivateKey(byte[] keyBytes, String algorithm) {
-        PrivateKey privateKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance(algorithm);
-            EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-            privateKey = kf.generatePrivate(keySpec);
-        } catch (NoSuchAlgorithmException e) {
-            System.err.println("Could not reconstruct the private key, the given algorithm could not be found.");
-        } catch (InvalidKeySpecException e) {
-            System.err.println("Could not reconstruct the private key");
-        } catch (Exception e) {
-            System.err.println(e.getMessage());
-        }
-
-        return privateKey;
-    }
-
-
-    public static void valid(String target, Map<String,String> headerMap, Map<String,Object> paramMap, String secret) {
+    public static String valid(String target, Map<String,String> headerMap, Map<String,Object> paramMap, String secret) throws Exception {
         String authorization = headerMap.get(HttpHeaderNames.AUTHORIZATION);
         String signKey = headerMap.get(DUANG_HEADER_SIGN_KEY);
+        // 如果签名通过后，则判断是否开启了参数加密
+        String isParamEncryptString = headerMap.get(DUANG_ENCRYPT);
+        System.out.println("##############secret: "  + secret);
+        boolean isParamEncrypt = Boolean.valueOf(isParamEncryptString);
+        boolean isParamSign = null != signKey && !signKey.isEmpty();
         // 如果签名字段不为空且是Authorization是以duang开头的，则认为duang请求，要进行签名及解决操作
-        boolean isDuangRquest = (null != signKey &&!signKey.isEmpty()) && authorization.startsWith(FRAMEWORK_OWNER);
+        boolean isDuangRquest = (isParamSign || isParamEncrypt) && authorization.startsWith(FRAMEWORK_OWNER);
         if(isDuangRquest) {
-            if(!secret.isEmpty()) {
+            if(secret.isEmpty()) {
                 throw new EncryptException(EncryptException.ValidateSignatureError, "根据appKey取appSecret时异常: appSecret不存在");
             }
-            EncryptDto dto = new EncryptDto(target, headerMap, paramMap);
-            String signKeyString = EncryptFactory.signSha256(dto, secret);
-            if(!signKey.equals(signKeyString)) {
-                throw new EncryptException(EncryptException.ValidateSignatureError, "Illegal request, it is not duang request");
-            }
-
-            // 如果签名通过后，则判断是否开启了参数加密
-            String isParamEncrypt = headerMap.getOrDefault(DUANG_ENCRYPT, "");
-            if(!isParamEncrypt.isEmpty()) {
+            // 如果开启的参数加密功能
+            if(isParamEncrypt) {
                 // 得到密文
-
-                // 先解密得到明文
-
-                // 对明文再进行加密
-
-                // 判断两个密文字符串是否一致
+                String encryptString = paramMap.get(DUANG_INPUTSTREAM_STR)+"";
+                return validParams(encryptString, secret);
+            } else if(isParamSign){
+                EncryptDto dto = new EncryptDto(target, headerMap, paramMap);
+                String signKeyString = EncryptFactory.signSha256(dto, secret);
+                if(!signKey.equals(signKeyString)) {
+                    throw new EncryptException(EncryptException.ValidateSignatureError, "Illegal request, it is not duang request");
+                }
+                return signKeyString;
             }
         }
+        return "";
+    }
+
+
+    private static String validParams(String replyMsg, String secret) throws Exception {
+        if(replyMsg.isEmpty() || secret.isEmpty()) {
+            throw new NullPointerException("加密字符串或密钥不能为空");
+        }
+        PKCS7Algorithm pkcs7Algorithm = new PKCS7Algorithm(secret);
+        // 先解密得到明文
+        String context = pkcs7Algorithm.decrypt(replyMsg);
+        if(null != context && !context.isEmpty()) {
+            // 对明文再进行加密
+            String encryptString = pkcs7Algorithm.encrypt(context);
+            // 判断两个密文字符串是否一致
+            if(!replyMsg.equals(encryptString)) {
+                throw new EncryptException(EncryptException.IllegalAesKey);
+            }
+        }
+        return context;
     }
 
 }

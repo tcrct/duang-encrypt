@@ -1,8 +1,6 @@
 package com.duangframework.encrypt.algorithm;
 
-import com.duangframework.encrypt.core.Base64;
 import com.duangframework.encrypt.core.EncryptDto;
-import com.duangframework.encrypt.core.EncryptFactory;
 import com.duangframework.encrypt.core.EncryptUtils;
 
 import javax.crypto.Mac;
@@ -31,7 +29,7 @@ public class Sha256Algorithm {
         try {
             byte[] signResult = encryptByte(appSecret, dto);
             //对字符串进行hmacSha256加密，然后再进行BASE64编码
-            return Base64.encode(signResult);
+            return java.util.Base64.getEncoder().encodeToString(signResult);
         } catch (Exception e) {
             throw new IllegalArgumentException("create signature failed.", e);
         }
