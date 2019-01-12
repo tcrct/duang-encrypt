@@ -36,6 +36,7 @@ public class PKCS7Algorithm {
 			throw new EncryptException(EncryptException.IllegalAesKey);
 		}
 		this.appSecret = Base64.decode(appSecret + "=");
+		System.out.println(appSecret+"            ####      "+appSecret.length());
 		this.receiveid = receiveid;
 		this.appKey = appKey;
 	}

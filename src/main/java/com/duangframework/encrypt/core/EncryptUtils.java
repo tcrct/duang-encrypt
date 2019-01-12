@@ -26,6 +26,9 @@ public class EncryptUtils {
 
     private static final String FRAMEWORK_OWNER = "duang";
     private static final String RANDOM_STR = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private static final String DUANG_INPUTSTREAM_STR = "duang_inputstream_str";
+    public static String DUANG_HEADER_SIGN_KEY = "x-ca-signature";
+    public static String DUANG_ENCRYPT = "encrypt-param";
 
 
     /**
@@ -57,11 +60,16 @@ public class EncryptUtils {
         if (headerParams.containsKey(HttpHeaderNames.DATE)) {
             signStr.append(headerParams.get(HttpHeaderNames.DATE)).append(lb);
         }
+        // 请求ID
+        if (headerParams.containsKey(HttpHeaderNames.REQUEST_ID)) {
+            signStr.append(headerParams.get(HttpHeaderNames.REQUEST_ID)).append(lb);
+        }
 
         // Header部份
         Map<String,String> headerParamItemMap = new TreeMap<String,String>(headerParams);
         for(Iterator<Map.Entry<String,String>> iterator = headerParamItemMap.entrySet().iterator(); iterator.hasNext();) {
             Map.Entry<String,String> entry = iterator.next();
+            // 如果是以duang开头的Key，也会添加到签名字符串中
             if(entry.getKey().startsWith(FRAMEWORK_OWNER)) {
                 signStr.append(entry.getValue()).append(lb);
             }
@@ -69,10 +77,14 @@ public class EncryptUtils {
 
         // Param部份
         Map<String, Object> paramsMap = encryptDto.getParams();
-        if(null != paramsMap && paramsMap.isEmpty()) {
+        if(null != paramsMap && !paramsMap.isEmpty()) {
             Map<String, Object> parameters = new TreeMap<String, Object>(paramsMap);
             for(Iterator<Map.Entry<String,Object>> iterator = parameters.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<String,Object> entry = iterator.next();
+                String key = entry.getKey();
+                if(DUANG_INPUTSTREAM_STR.equals(key)) {
+                    continue;
+                }
                 Object value = entry.getValue();
                 if(null != value) {
                     signStr.append(entry.getKey()).append("=").append(value).append("&");
@@ -159,6 +171,36 @@ public class EncryptUtils {
         }
 
         return privateKey;
+    }
+
+
+    public static void valid(String target, Map<String,String> headerMap, Map<String,Object> paramMap, String secret) {
+        String authorization = headerMap.get(HttpHeaderNames.AUTHORIZATION);
+        String signKey = headerMap.get(DUANG_HEADER_SIGN_KEY);
+        // 如果签名字段不为空且是Authorization是以duang开头的，则认为duang请求，要进行签名及解决操作
+        boolean isDuangRquest = (null != signKey &&!signKey.isEmpty()) && authorization.startsWith(FRAMEWORK_OWNER);
+        if(isDuangRquest) {
+            if(!secret.isEmpty()) {
+                throw new EncryptException(EncryptException.ValidateSignatureError, "根据appKey取appSecret时异常: appSecret不存在");
+            }
+            EncryptDto dto = new EncryptDto(target, headerMap, paramMap);
+            String signKeyString = EncryptFactory.signSha256(dto, secret);
+            if(!signKey.equals(signKeyString)) {
+                throw new EncryptException(EncryptException.ValidateSignatureError, "Illegal request, it is not duang request");
+            }
+
+            // 如果签名通过后，则判断是否开启了参数加密
+            String isParamEncrypt = headerMap.getOrDefault(DUANG_ENCRYPT, "");
+            if(!isParamEncrypt.isEmpty()) {
+                // 得到密文
+
+                // 先解密得到明文
+
+                // 对明文再进行加密
+
+                // 判断两个密文字符串是否一致
+            }
+        }
     }
 
 }

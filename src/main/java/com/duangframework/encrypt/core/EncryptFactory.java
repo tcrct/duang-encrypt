@@ -81,5 +81,8 @@ public class EncryptFactory {
         return pkcs7Algorithm.encrypt(nonce, replyMsg);
     }
 
+    public static void valid(String target, Map<String,String> headerMap, Map<String,Object> paramMap, String secret) throws Exception {
+        EncryptUtils.valid(target, headerMap, paramMap, secret);
+    }
 
 }

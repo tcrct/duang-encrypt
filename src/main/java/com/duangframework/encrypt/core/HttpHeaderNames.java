@@ -94,6 +94,7 @@ public final class HttpHeaderNames {
     public static final String X_FRAME_OPTIONS = "x-frame-options";
 
     public static final String NONCE = "nonce";
+    public static final String REQUEST_ID = "requestid";
 
     private HttpHeaderNames() {
     }

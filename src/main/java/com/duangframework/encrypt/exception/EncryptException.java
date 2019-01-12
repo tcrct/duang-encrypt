@@ -55,4 +55,9 @@ public class EncryptException extends RuntimeException {
         this.code = code;
     }
 
+    public EncryptException(int code, String message) {
+        super(message);
+        this.code = code;
+    }
+
 }
