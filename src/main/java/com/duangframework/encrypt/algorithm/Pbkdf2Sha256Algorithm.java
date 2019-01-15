@@ -1,9 +1,10 @@
 package com.duangframework.encrypt.algorithm;
 
+import org.apache.commons.codec.binary.Base64;
+
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
@@ -15,6 +16,7 @@ import java.security.spec.KeySpec;
  *   用于密码加密
  *
  * @author  laotang
+ * @since 1.6
  */
 public class Pbkdf2Sha256Algorithm {
 
@@ -35,6 +37,7 @@ public class Pbkdf2Sha256Algorithm {
      * @param salt       加盐
      * @param iterations 迭代计数
      * @return
+     * @since 1.6
      */
     private String getEncodedHash(String password, String salt, int iterations) {
         // Returns only the last part of whole encoded password
@@ -44,7 +47,7 @@ public class Pbkdf2Sha256Algorithm {
         } catch (NoSuchAlgorithmException e) {
             System.err.println("Could NOT retrieve PBKDF2WithHmacSHA256 algorithm: " + e.getMessage());
         }
-        KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt.getBytes(Charset.forName("UTF-8")), iterations, 256);
+        KeySpec keySpec = new PBEKeySpec(password.toCharArray(), salt.getBytes(), iterations, 256);
         SecretKey secret = null;
         try {
             secret = keyFactory.generateSecret(keySpec);
@@ -52,7 +55,7 @@ public class Pbkdf2Sha256Algorithm {
             System.err.println("Could NOT generate secret key: " + e.getMessage());
         }
         byte[] rawHash = secret.getEncoded();
-        return java.util.Base64.getEncoder().encodeToString(rawHash);
+        return Base64.encodeBase64String(rawHash);
     }
 
     /**

@@ -9,6 +9,7 @@
 package com.duangframework.encrypt.algorithm;
 
 import com.duangframework.encrypt.exception.EncryptException;
+import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -30,7 +31,7 @@ public class PKCS7Algorithm {
 	}
 
     public void setSymmetricKey(String symmetricKey) {
-        this.symmetricKey = java.util.Base64.getDecoder().decode(symmetricKey);
+        this.symmetricKey = Base64.decodeBase64(symmetricKey);
     }
 
     /**
@@ -39,7 +40,7 @@ public class PKCS7Algorithm {
      * @throws EncryptException
      */
     public PKCS7Algorithm(String symmetricKey) throws EncryptException {
-        this.symmetricKey = java.util.Base64.getDecoder().decode(symmetricKey);
+        this.symmetricKey = Base64.decodeBase64(symmetricKey);
     }
 
 
@@ -72,7 +73,7 @@ public class PKCS7Algorithm {
 			// 加密
 			byte[] result = cipher.doFinal(byteContent);
 			// 使用BASE64对加密后的字符串进行编码
-			return java.util.Base64.getEncoder().encodeToString(result);
+			return Base64.encodeBase64String(result);
 		} catch (Exception e) {
 			throw new EncryptException(EncryptException.IllegalAesKey);
 		}
@@ -88,7 +89,7 @@ public class PKCS7Algorithm {
 	 */
 	public String decrypt(String content) {
 		try {
-			byte[] resultByte = java.util.Base64.getDecoder().decode(content);
+			byte[] resultByte = Base64.decodeBase64(content);
 			KeyGenerator kgen = KeyGenerator.getInstance("AES");// 创建AES的Key生产者
 			kgen.init(128, new SecureRandom(symmetricKey));
 			SecretKey secretKey = kgen.generateKey();// 根据用户密码，生成一个密钥
