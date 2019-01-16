@@ -1,6 +1,6 @@
 package com.duangframework.encrypt.algorithm;
 
-import org.apache.commons.codec.binary.Base64;
+import com.duangframework.encrypt.core.Base64Utils;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -55,7 +55,7 @@ public class Pbkdf2Sha256Algorithm {
             System.err.println("Could NOT generate secret key: " + e.getMessage());
         }
         byte[] rawHash = secret.getEncoded();
-        return Base64.encodeBase64String(rawHash);
+        return Base64Utils.encode(rawHash);
     }
 
     /**
@@ -73,7 +73,7 @@ public class Pbkdf2Sha256Algorithm {
      * @param password   密码明文
      * @param salt       加盐
      * @param iterations 迭代计数
-     * @return
+     * @return      算法名称$迭代计数$盐值$密文
      */
     public String encode(String password, String salt, int iterations) {
         // returns hashed password, along with algorithm, number of iterations and salt

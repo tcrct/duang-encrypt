@@ -53,12 +53,4 @@
     <maven.compiler.target>1.6</maven.compiler.target>
   </properties>
 
-    <dependencies>
-        <dependency>
-          <groupId>commons-codec</groupId>
-          <artifactId>commons-codec</artifactId>
-          <version>1.4</version>
-        </dependency>
-    </dependencies>
-
 </project>
