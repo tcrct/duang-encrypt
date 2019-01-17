@@ -3,10 +3,7 @@ package com.duangframework.encrypt.core;
 import com.duangframework.encrypt.algorithm.PKCS7Algorithm;
 import com.duangframework.encrypt.exception.EncryptException;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Created by laotang on 2019/1/1.
@@ -177,6 +174,53 @@ public class EncryptUtils {
             }
         }
         return context;
+    }
+
+    /**
+     * 取得Appkey
+     * 每隔2个字符就是创建日期
+     * @return
+     */
+    public static String getAppKey() {
+        String randomString = getRandomStr();
+        Calendar cal = Calendar.getInstance();
+        int monday = cal.get(Calendar.MONDAY)+1;
+        String mondayStr = monday+"";
+        if(monday < 10) {
+            mondayStr = "0" + monday;
+        }
+        String aa = cal.get(Calendar.YEAR)+ mondayStr + cal.get(Calendar.DATE);
+        char[] timeChar = aa.toCharArray();
+        StringBuffer sb = new StringBuffer();
+        if(randomString.length() == 16) {
+            char[] chars = randomString.toCharArray();
+            int index = 0;
+            for(int i=0; i<chars.length; i++) {
+                if(i>0 && i%2 == 0) {
+                    sb.append(timeChar[index++]);
+                }
+                sb.append(chars[i]);
+            }
+            sb.append(timeChar[timeChar.length-1]);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 取得appSecret
+     * 随机字符串+盐值+盐值，再无规则打乱
+     * @return
+     */
+    public static String getAppSecret() {
+        String secret = getSalt() + getRandomStr() + getSalt();  // 16 +12 +12
+        char[] chars = secret.toCharArray();
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < chars.length; i++) {
+            int number = random.nextInt(secret.length());
+            sb.append(chars[number]);
+        }
+        return sb.toString();
     }
 
 }

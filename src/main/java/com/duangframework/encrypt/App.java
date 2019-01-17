@@ -1,5 +1,7 @@
 package com.duangframework.encrypt;
 
+import com.duangframework.encrypt.core.EncryptUtils;
+
 /**
  * Hello world!
  *
@@ -11,6 +13,8 @@ public class App
 //        PublicKey publicKey = EncryptUtils.getPublicKey(null, EncryptType.PKCS7.name());
 //        System.out.println(publicKey.getFormat());
 //        System.out.println(EncryptUtils.getPublicKey(null, EncryptType.PKCS7.name()));
+
+        System.out.println(EncryptUtils.getAppSecret());
 
     }
 }
