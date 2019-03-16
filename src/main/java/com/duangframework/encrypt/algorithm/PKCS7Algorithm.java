@@ -47,8 +47,10 @@ public class PKCS7Algorithm {
 		try {
 			// 创建AES的Key生产者
 			KeyGenerator kgen = KeyGenerator.getInstance("AES");
+			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG" );
+			secureRandom.setSeed(symmetricKey);
 			// 利用用户密码作为随机数初始化出
-			kgen.init(128, new SecureRandom(symmetricKey));
+			kgen.init(128, secureRandom);
 			// 128位的key生产者
 			//加密没关系，SecureRandom是生成安全随机数序列，password.getBytes()是种子，只要种子相同，序列就一样，所以解密只要有password就行
 			// 根据用户密码，生成一个密钥
@@ -67,6 +69,7 @@ public class PKCS7Algorithm {
 			// 使用BASE64对加密后的字符串进行编码
 			return Base64Utils.encode(result);
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new EncryptException(EncryptException.IllegalAesKey);
 		}
 	}
@@ -83,7 +86,10 @@ public class PKCS7Algorithm {
 		try {
 			byte[] resultByte = Base64Utils.decodeBase64(content);
 			KeyGenerator kgen = KeyGenerator.getInstance("AES");// 创建AES的Key生产者
-			kgen.init(128, new SecureRandom(symmetricKey));
+			//SecureRandom 实现完全隨操作系统本身的內部狀態，除非調用方在調用 getInstance 方法之後又調用了 setSeed 方法；该实现在 windows 上每次生成的 key 都相同，但是在 solaris 或部分 linux 系统上则不同。
+			SecureRandom secureRandom = SecureRandom.getInstance("SHA1PRNG" );
+			secureRandom.setSeed(symmetricKey);
+			kgen.init(128, secureRandom);
 			SecretKey secretKey = kgen.generateKey();// 根据用户密码，生成一个密钥
 			byte[] enCodeFormat = secretKey.getEncoded();// 返回基本编码格式的密钥
 			SecretKeySpec key = new SecretKeySpec(enCodeFormat, "AES");// 转换为AES专用密钥
@@ -92,6 +98,7 @@ public class PKCS7Algorithm {
 			byte[] result = cipher.doFinal(resultByte);
 			return null != result ? new String(result, CHARSET) : ""; // 明文
 		} catch (Exception e) {
+			e.printStackTrace();
 			throw new EncryptException(EncryptException.IllegalAesKey);
 		}
 	}
