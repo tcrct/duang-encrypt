@@ -42,6 +42,7 @@ public class PKCS7Algorithm {
 	 * @param content
 	 *            需要被加密的字符串
 	 * @return 密文
+	 * @since 1.0
 	 */
 	public String encrypt(String content) {
 		try {
