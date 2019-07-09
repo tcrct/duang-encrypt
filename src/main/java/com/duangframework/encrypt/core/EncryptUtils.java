@@ -158,7 +158,7 @@ public class EncryptUtils {
     }
 
 
-    private static String validParams(String replyMsg, String secret) throws Exception {
+    public static String validParams(String replyMsg, String secret) throws Exception {
         if(replyMsg.isEmpty() || secret.isEmpty()) {
             throw new NullPointerException("加密字符串或密钥不能为空");
         }
